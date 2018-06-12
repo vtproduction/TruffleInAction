@@ -1,0 +1,27 @@
+{
+  "name": "faucet",
+  "version": "1.0.0",
+  "description": "Faucet explore",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vtproduction/TruffleInAction.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vtproduction/TruffleInAction/issues"
+  },
+  "homepage": "https://github.com/vtproduction/TruffleInAction#readme",
+  "dependencies": {
+    "dotenv": "^6.0.0",
+    "ethereumjs-wallet": "^0.6.0",
+    "truffle-wallet-provider": "0.0.5"
+  }
+}
