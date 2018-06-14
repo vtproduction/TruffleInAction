@@ -13,4 +13,8 @@ contract METoken is StandardToken {
         balances[msg.sender] = _initial_supply;
         emit Transfer(address(0), msg.sender, _initial_supply);
     }
+
+    function testPrint(address b) public constant returns (address , address ){
+        return (msg.sender,b);
+    }
 }
