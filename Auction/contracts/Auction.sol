@@ -28,6 +28,11 @@ contract Auction {
         _;
     }
 
+    modifier auctionHasEnded() {
+        require(ended);
+        _;
+    }
+
     
 
     event auctionEnded(uint256 _highestBid, address _winner);
@@ -41,21 +46,36 @@ contract Auction {
         emit newHighestBid(msg.value);
     }
 
-    function withdraw() public returns (uint256) {
-        if(!ended) return 0;
-        uint256 amount = userBiddedValue[msg.sender];
+    function withdraw() public notAllowOwner{
+        uint256 amount;
+        if (msg.sender == highestBidder) {
+            uint256 amount = userBiddedValue[msg.sender] - highestBid;
+        } else {
+            amount = userBiddedValue[msg.sender];
+        }
         if (amount > 0) {
-            userBiddedValue[msg.sender] = 0;
+            userBiddedValue[msg.sender] -= amount;
             if (!msg.sender.send(amount)) {
-                userBiddedValue[msg.sender] = amount;
+                userBiddedValue[msg.sender] += amount;
             }
+        } 
+    }
+
+    function getWidthdrawableAmount public returns(uint256){
+        amount = userBiddedValue[msg.sender];
+        if (msg.sender == highestBidder) {
+            amount -= highestBid;
+        } 
+        if (amount <= 0) {
+            return 0;
         } 
         return amount;
     }
 
-    function endBid() public onlyOwner {
+    function endBid() public onlyOwner, auctionNotEndYet {
         ended = true;
         userBiddedValue[highestBidder] -= highestBid;
+        msg.sender.send(amount);
         emit auctionEnded(highestBid, highestBidder);
     }
 
