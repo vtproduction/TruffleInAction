@@ -61,7 +61,7 @@ contract Auction {
         } 
     }
 
-    function getWidthdrawableAmount public returns(uint256){
+    function getWidthdrawableAmount() public returns(uint256){
         amount = userBiddedValue[msg.sender];
         if (msg.sender == highestBidder) {
             amount -= highestBid;
