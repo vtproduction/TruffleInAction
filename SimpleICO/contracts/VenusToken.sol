@@ -1,17 +1,17 @@
 pragma solidity ^0.4.18;
 
 // ----------------------------------------------------------------------------
-// 'Venus' token contract
+// 'VENUS' CROWDSALE token contract
 //
-// Deployed to : 0x06B0101deae182492c4AD2fe5D3A28BA1b69F0F1
+// Deployed to : 0x3ff13b36f86ce8b2127da5c134c23b0c083b6a00
 // Symbol      : VNS
 // Name        : Venus Token
-// Total supply: 100000000
+// Total supply: Gazillion
 // Decimals    : 18
 //
 // Enjoy.
 //
-// (c) by Moritz Neto with BokkyPooBah / Bok Consulting Pty Ltd Au 2017. The MIT Licence.
+//
 // ----------------------------------------------------------------------------
 
 
@@ -19,19 +19,19 @@ pragma solidity ^0.4.18;
 // Safe maths
 // ----------------------------------------------------------------------------
 contract SafeMath {
-    function safeAdd(uint a, uint b) public pure returns (uint c) {
+    function safeAdd(uint a, uint b) internal pure returns (uint c) {
         c = a + b;
         require(c >= a);
     }
-    function safeSub(uint a, uint b) public pure returns (uint c) {
+    function safeSub(uint a, uint b) internal pure returns (uint c) {
         require(b <= a);
         c = a - b;
     }
-    function safeMul(uint a, uint b) public pure returns (uint c) {
+    function safeMul(uint a, uint b) internal pure returns (uint c) {
         c = a * b;
         require(a == 0 || c / a == b);
     }
-    function safeDiv(uint a, uint b) public pure returns (uint c) {
+    function safeDiv(uint a, uint b) internal pure returns (uint c) {
         require(b > 0);
         c = a / b;
     }
@@ -104,6 +104,9 @@ contract VenusToken is ERC20Interface, Owned, SafeMath {
     string public  name;
     uint8 public decimals;
     uint public _totalSupply;
+    uint public startDate;
+    uint public bonusEnds;
+    uint public endDate;
 
     mapping(address => uint) balances;
     mapping(address => mapping(address => uint)) allowed;
@@ -116,9 +119,9 @@ contract VenusToken is ERC20Interface, Owned, SafeMath {
         symbol = "VNS";
         name = "Venus Token";
         decimals = 18;
-        _totalSupply = 100000000 * 10 ** decimals;
-        balances[msg.sender] = _totalSupply;
-        emit Transfer(address(0), msg.sender, _totalSupply);
+        bonusEnds = now + 5 hours;
+        endDate = now + 10 hours;
+
     }
 
 
@@ -131,7 +134,7 @@ contract VenusToken is ERC20Interface, Owned, SafeMath {
 
 
     // ------------------------------------------------------------------------
-    // Get the token balance for account tokenOwner
+    // Get the token balance for account `tokenOwner`
     // ------------------------------------------------------------------------
     function balanceOf(address tokenOwner) public constant returns (uint balance) {
         return balances[tokenOwner];
@@ -139,7 +142,7 @@ contract VenusToken is ERC20Interface, Owned, SafeMath {
 
 
     // ------------------------------------------------------------------------
-    // Transfer the balance from token owner's account to to account
+    // Transfer the balance from token owner's account to `to` account
     // - Owner's account must have sufficient balance to transfer
     // - 0 value transfers are allowed
     // ------------------------------------------------------------------------
@@ -152,12 +155,12 @@ contract VenusToken is ERC20Interface, Owned, SafeMath {
 
 
     // ------------------------------------------------------------------------
-    // Token owner can approve for spender to transferFrom(...) tokens
+    // Token owner can approve for `spender` to transferFrom(...) `tokens`
     // from the token owner's account
     //
     // https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20-token-standard.md
     // recommends that there are no checks for the approval double-spend attack
-    // as this should be implemented in user interfaces 
+    // as this should be implemented in user interfaces
     // ------------------------------------------------------------------------
     function approve(address spender, uint tokens) public returns (bool success) {
         allowed[msg.sender][spender] = tokens;
@@ -167,10 +170,10 @@ contract VenusToken is ERC20Interface, Owned, SafeMath {
 
 
     // ------------------------------------------------------------------------
-    // Transfer tokens from the from account to the to account
-    // 
+    // Transfer `tokens` from the `from` account to the `to` account
+    //
     // The calling account must already have sufficient tokens approve(...)-d
-    // for spending from the from account and
+    // for spending from the `from` account and
     // - From account must have sufficient balance to transfer
     // - Spender must have sufficient allowance to transfer
     // - 0 value transfers are allowed
@@ -194,9 +197,9 @@ contract VenusToken is ERC20Interface, Owned, SafeMath {
 
 
     // ------------------------------------------------------------------------
-    // Token owner can approve for spender to transferFrom(...) tokens
-    // from the token owner's account. The spender contract function
-    // receiveApproval(...) is then executed
+    // Token owner can approve for `spender` to transferFrom(...) `tokens`
+    // from the token owner's account. The `spender` contract function
+    // `receiveApproval(...)` is then executed
     // ------------------------------------------------------------------------
     function approveAndCall(address spender, uint tokens, bytes data) public returns (bool success) {
         allowed[msg.sender][spender] = tokens;
@@ -205,13 +208,23 @@ contract VenusToken is ERC20Interface, Owned, SafeMath {
         return true;
     }
 
-
     // ------------------------------------------------------------------------
-    // Don't accept ETH
+    // 1,000 Venus Tokens per 1 ETH
     // ------------------------------------------------------------------------
     function () public payable {
-        revert();
+        require(now >= startDate && now <= endDate);
+        uint tokens;
+        if (now <= bonusEnds) {
+            tokens = msg.value * 2000;
+        } else {
+            tokens = msg.value * 1000;
+        }
+        balances[msg.sender] = safeAdd(balances[msg.sender], tokens);
+        _totalSupply = safeAdd(_totalSupply, tokens);
+        emit Transfer(address(0), msg.sender, tokens);
+        owner.transfer(msg.value);
     }
+
 
 
     // ------------------------------------------------------------------------
